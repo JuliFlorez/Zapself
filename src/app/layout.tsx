@@ -1,0 +1,38 @@
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+export const metadata: Metadata = {
+  title: 'zapself | Ephemeral Social Network Experiment',
+  description: 'An ephemeral social network experiment where user identities die after 24 hours, but ideas can be immortalized anonymously.',
+  keywords: ['zapself', 'ephemeral', 'social network', 'experiment', 'anonymous', 'privacy'],
+  authors: [{ name: 'zapself experiment' }],
+  viewport: 'width=device-width, initial-scale=1.0',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+    >
+      <body className="min-h-full flex flex-col bg-bg-dark text-gray-100 font-sans selection:bg-accent selection:text-white">
+        {children}
+      </body>
+    </html>
+  );
+}
