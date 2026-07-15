@@ -19,6 +19,7 @@ export default async function FeedPage() {
 
   // Sort posts by newest first
   const sortedPosts = [...data.posts].sort((a, b) => b.createdAt - a.createdAt);
+  const activeUsernames = new Set(data.users.map((u) => u.username.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-bg-dark flex flex-col">
@@ -77,7 +78,11 @@ export default async function FeedPage() {
           ) : (
             <div className="space-y-4">
               {sortedPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  isGhost={!activeUsernames.has(post.username.toLowerCase())}
+                />
               ))}
             </div>
           )}

@@ -2,7 +2,7 @@ import { getCleanData } from '@/lib/db';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles, EyeOff, ShieldCheck, Heart, Trash2, Ghost } from 'lucide-react';
+import { ArrowLeft, Sparkles, EyeOff, ShieldCheck, Ghost } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,7 +85,7 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
 
         {/* The Main Post Card */}
-        <PostCard post={post} />
+        <PostCard post={post} isGhost={!isAuthorActive} />
 
         {/* Thread Info Banner */}
         <div className="glass-panel rounded-2xl p-6 border border-white/5 space-y-3">

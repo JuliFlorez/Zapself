@@ -53,7 +53,7 @@ export async function getCleanData(): Promise<DatabaseSchema> {
       let dataStr: string;
       try {
         dataStr = await fs.readFile(DB_PATH, 'utf-8');
-      } catch (err) {
+      } catch {
         // If file doesn't exist or is empty, write default structure
         const initial: DatabaseSchema = { users: [], posts: [] };
         await fs.writeFile(DB_PATH, JSON.stringify(initial, null, 2), 'utf-8');
@@ -185,4 +185,8 @@ export async function getCurrentUser(): Promise<User | null> {
   const userId = cookieStore.get('zapself_userId')?.value;
   if (!userId) return null;
   return data.users.find((u) => u.id === userId) || null;
+}
+
+export function getServerTime(): number {
+  return Date.now();
 }

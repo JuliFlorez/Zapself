@@ -1,8 +1,8 @@
-import { getCleanData } from '@/lib/db';
+import { getCleanData, getServerTime } from '@/lib/db';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
 import Link from 'next/link';
-import { User, UserX, Ghost, Calendar, Sparkles, MessageCircleCode, ArrowLeft } from 'lucide-react';
+import { User, UserX, Ghost, Calendar, ArrowLeft } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,7 +82,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     {Math.max(
                       0,
                       Math.ceil(
-                        (activeUser.createdAt + 24 * 60 * 60 * 1000 - Date.now()) /
+                        (activeUser.createdAt + 24 * 60 * 60 * 1000 - getServerTime()) /
                           (1000 * 60 * 60)
                       )
                     )}
@@ -108,7 +108,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
               <div className="p-4 bg-purple-500/5 border border-purple-500/15 rounded-xl text-center">
                 <p className="text-sm font-semibold italic text-purple-200">
-                  "This user has ceased to exist in the experiment, but their footprints remain."
+                  &quot;This user has ceased to exist in the experiment, but their footprints remain.&quot;
                 </p>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
             <div className="space-y-4">
               {userPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard key={post.id} post={post} isGhost={!activeUser} />
               ))}
             </div>
           </section>

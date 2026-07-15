@@ -44,7 +44,7 @@ export default function CountdownBadge({ createdAt, keepContent }: CountdownProp
     return () => clearInterval(interval);
   }, [createdAt]);
 
-  if (keepContent && (isGhost || Date.now() - createdAt >= 24 * 60 * 60 * 1000)) {
+  if (keepContent && isGhost) {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-950/40 border border-purple-500/30 text-purple-300 shadow-sm shadow-purple-500/10 animate-pulse-glow">
         <Ghost className="w-3.5 h-3.5 text-purple-400" />

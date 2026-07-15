@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: 'An ephemeral social network experiment where user identities die after 24 hours, but ideas can be immortalized anonymously.',
   keywords: ['zapself', 'ephemeral', 'social network', 'experiment', 'anonymous', 'privacy'],
   authors: [{ name: 'zapself experiment' }],
-  viewport: 'width=device-width, initial-scale=1.0',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
 };
 
 export default function RootLayout({

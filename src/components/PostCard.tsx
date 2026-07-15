@@ -10,10 +10,10 @@ interface PostCardProps {
     createdAt: number;
     keepContent: boolean;
   };
+  isGhost?: boolean;
 }
 
-export default function PostCard({ post }: PostCardProps) {
-  const isGhost = Date.now() - post.createdAt >= 24 * 60 * 60 * 1000;
+export default function PostCard({ post, isGhost = false }: PostCardProps) {
   
   // Format creation date
   const formattedDate = new Date(post.createdAt).toLocaleTimeString([], {

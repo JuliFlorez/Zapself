@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { User, LogOut, Clock } from 'lucide-react';
+import { LogOut, Clock } from 'lucide-react';
 import { logoutAction } from '@/app/actions';
 
 interface SessionCountdownProps {
@@ -26,7 +26,6 @@ export default function SessionCountdown({ username, createdAt }: SessionCountdo
 
       const hours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
       setTimeLeft(`${hours}h ${minutes}m left`);
     };
