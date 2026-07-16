@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { LogOut, Clock } from 'lucide-react';
 import { logoutAction } from '@/app/actions';
+import Link from 'next/link';
 
 interface SessionCountdownProps {
   username: string;
@@ -37,10 +38,16 @@ export default function SessionCountdown({ username, createdAt }: SessionCountdo
 
   return (
     <div className="flex flex-wrap items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-xs shadow-inner">
-      <div className="flex items-center gap-2">
+      <Link
+        href={`/user/${username}`}
+        className="flex items-center gap-2 hover:opacity-85 transition-opacity group cursor-pointer"
+        title="View your posts"
+      >
         <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-        <span className="font-bold text-white">@{username}</span>
-      </div>
+        <span className="font-bold text-white group-hover:text-accent group-hover:underline transition-colors">
+          @{username}
+        </span>
+      </Link>
       
       <div className="flex items-center gap-1.5 text-text-muted border-l border-white/10 pl-4">
         <Clock className="w-3.5 h-3.5 text-ghost" />

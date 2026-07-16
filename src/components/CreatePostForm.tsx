@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createPostAction } from '@/app/actions';
-import { Send, EyeOff, ShieldCheck } from 'lucide-react';
+import { Send, EyeOff, ShieldCheck, Image as ImageIcon, X } from 'lucide-react';
 
 interface CreatePostFormProps {
   keepContent: boolean;
@@ -11,8 +11,32 @@ interface CreatePostFormProps {
 
 export default function CreatePostForm({ keepContent, username }: CreatePostFormProps) {
   const [content, setContent] = useState('');
+  const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setError(null);
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Image must be smaller than 2MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.onerror = () => {
+        setError('Failed to read image file.');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,6 +45,9 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
 
     const formData = new FormData();
     formData.append('content', content);
+    if (image) {
+      formData.append('imageUrl', image);
+    }
 
     startTransition(async () => {
       const res = await createPostAction(formData);
@@ -28,6 +55,7 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
         setError(res.error);
       } else {
         setContent('');
+        setImage(null);
       }
     });
   };
@@ -60,6 +88,50 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
             className="w-full bg-bg-dark/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm resize-none transition-all"
             disabled={isPending}
           />
+        </div>
+
+        {/* Image Selection and Preview */}
+        <div className="space-y-3">
+          {image && (
+            <div className="relative inline-block">
+              <img
+                src={image}
+                alt="Selected preview"
+                className="max-h-24 w-auto rounded-lg border border-white/10 object-cover shadow-md"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors cursor-pointer shadow-md flex items-center justify-center"
+                title="Remove image"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="image-upload-input"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white rounded-xl text-xs font-bold transition-all cursor-pointer select-none"
+            >
+              <ImageIcon className="w-3.5 h-3.5 text-accent" />
+              <span>Attach Image (Optional)</span>
+            </label>
+            <input
+              id="image-upload-input"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              disabled={isPending}
+            />
+            {image && (
+              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/20 px-2 py-0.5 border border-emerald-500/20 rounded-md animate-pulse">
+                Image Attached
+              </span>
+            )}
+          </div>
         </div>
 
         {error && (

@@ -1,6 +1,9 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import CountdownBadge from './CountdownBadge';
-import { MessageSquare, Calendar, User, UserX } from 'lucide-react';
+import { MessageSquare, Calendar, User, UserX, Image as ImageIcon, Eye, EyeOff } from 'lucide-react';
 
 interface PostCardProps {
   post: {
@@ -9,11 +12,13 @@ interface PostCardProps {
     content: string;
     createdAt: number;
     keepContent: boolean;
+    imageUrl?: string;
   };
   isGhost?: boolean;
 }
 
 export default function PostCard({ post, isGhost = false }: PostCardProps) {
+  const [showImage, setShowImage] = useState(false);
   
   // Format creation date
   const formattedDate = new Date(post.createdAt).toLocaleTimeString([], {
@@ -52,9 +57,48 @@ export default function PostCard({ post, isGhost = false }: PostCardProps) {
         </div>
 
         {/* Card Body */}
-        <p className="text-white text-base leading-relaxed break-words font-medium whitespace-pre-wrap">
-          {post.content}
-        </p>
+        <div className="space-y-3">
+          <p className="text-white text-base leading-relaxed break-words font-medium whitespace-pre-wrap">
+            {post.content}
+          </p>
+
+          {post.imageUrl && (
+            <div className="mt-3 overflow-hidden rounded-xl border border-white/5 bg-bg-dark/20">
+              {showImage ? (
+                <div className="relative group/img">
+                  <img
+                    src={post.imageUrl}
+                    alt="Post attachment"
+                    className="w-full h-auto max-h-[400px] object-cover rounded-lg border border-white/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowImage(false)}
+                    className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white font-bold text-xs transition-all shadow-md focus:outline-none cursor-pointer border border-white/10"
+                  >
+                    <EyeOff className="w-3.5 h-3.5 text-accent" />
+                    <span>Hide Image</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 px-4 border border-dashed border-white/10 rounded-lg bg-white/5 hover:bg-white/10 transition-all">
+                  <ImageIcon className="w-8 h-8 text-text-muted mb-2 animate-pulse" />
+                  <p className="text-xs text-text-muted mb-3 text-center">
+                    This post contains an image. Click below to load it.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowImage(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white font-bold text-xs transition-all shadow-md cursor-pointer focus:outline-none"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Show Image</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Card Footer */}
         <div className="flex items-center justify-between text-xs text-text-muted pt-2 border-t border-white/5">

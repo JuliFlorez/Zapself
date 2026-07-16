@@ -56,10 +56,12 @@ export async function createPostAction(formData: FormData) {
     return { error: 'Post content cannot be empty.' };
   }
 
+  const imageUrl = formData.get('imageUrl') as string || undefined;
+
   const cookieStore = await cookies();
   const keepContentCookie = cookieStore.get('zapself_keepContent')?.value === 'true';
 
-  const post = await createPost(user.username, content, keepContentCookie);
+  const post = await createPost(user.username, content, keepContentCookie, imageUrl);
   if (!post) {
     return { error: 'Failed to create post.' };
   }

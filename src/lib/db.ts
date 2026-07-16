@@ -14,6 +14,7 @@ export interface Post {
   content: string;
   createdAt: number; // timestamp ms
   keepContent: boolean;
+  imageUrl?: string;
 }
 
 export interface DatabaseSchema {
@@ -146,7 +147,7 @@ export async function registerUser(username: string): Promise<{ success: boolean
  * Helper to create a post.
  * Cleans the DB first.
  */
-export async function createPost(username: string, content: string, keepContent: boolean): Promise<Post | null> {
+export async function createPost(username: string, content: string, keepContent: boolean, imageUrl?: string): Promise<Post | null> {
   const cleanContent = content.trim();
   if (!cleanContent) return null;
 
@@ -159,6 +160,7 @@ export async function createPost(username: string, content: string, keepContent:
     content: cleanContent,
     createdAt: Date.now(),
     keepContent,
+    imageUrl,
   };
 
   await runLocked(async () => {
