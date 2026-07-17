@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getCleanData, getServerTime } from '@/lib/db';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
@@ -8,6 +9,50 @@ export const dynamic = 'force-dynamic';
 
 interface ProfilePageProps {
   params: Promise<{ username: string }>;
+}
+
+export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
+  const { username } = await params;
+  const decodedUsername = decodeURIComponent(username).toLowerCase();
+  const data = await getCleanData();
+
+  const activeUser = data.users.find(
+    (u) => u.username.toLowerCase() === decodedUsername
+  );
+
+  const title = `@${decodedUsername}'s Identity | zapself`;
+  
+  let description = `View @${decodedUsername}'s profile and thoughts timeline on zapself.`;
+  if (activeUser) {
+    description = `@${decodedUsername} is an active participant in the zapself 24-hour ephemeral experiment. Check out their live timeline.`;
+  } else {
+    const userPosts = data.posts.filter((p) => p.username.toLowerCase() === decodedUsername);
+    if (userPosts.length > 0) {
+      description = `@${decodedUsername}'s session has expired and their identity was wiped, but their immortalized footprints remain here.`;
+    } else {
+      description = `No trace of the identity @${decodedUsername} was found on the zapself experiment timeline.`;
+    }
+  }
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/user/${decodedUsername}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/user/${decodedUsername}`,
+      type: 'profile',
+      username: decodedUsername,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {

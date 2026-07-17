@@ -1,6 +1,20 @@
+import type { Metadata } from 'next';
 import { getCurrentUser } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import RegisterForm from '@/components/RegisterForm';
+
+export const metadata: Metadata = {
+  title: 'Register Identity | zapself',
+  description: 'Create a temporary 24-hour identity on zapself to join the ephemeral social network experiment.',
+  alternates: {
+    canonical: '/register',
+  },
+  openGraph: {
+    title: 'Register Identity | zapself',
+    description: 'Create a temporary 24-hour identity on zapself to join the ephemeral social network experiment.',
+    url: '/register',
+  },
+};
 
 export const dynamic = 'force-dynamic';
 

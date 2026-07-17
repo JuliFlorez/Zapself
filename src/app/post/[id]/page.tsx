@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getCleanData } from '@/lib/db';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
@@ -8,6 +9,46 @@ export const dynamic = 'force-dynamic';
 
 interface PostPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getCleanData();
+  const post = data.posts.find((p) => p.id === id);
+
+  if (!post) {
+    return {
+      title: 'Post Expired | zapself',
+      description: 'This thought has faded away under the 24-hour rule.',
+    };
+  }
+
+  const excerpt = post.content.length > 100 
+    ? `${post.content.substring(0, 100)}...` 
+    : post.content;
+  const authorStatus = post.keepContent ? 'Immortalized anonymous thought' : 'Temporary thought';
+  const title = `Thought by @${post.username} | zapself`;
+  const description = `"${excerpt}" - ${authorStatus} on zapself.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/post/${id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/post/${id}`,
+      type: 'article',
+      authors: [`@${post.username}`],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
 }
 
 export default async function PostPage({ params }: PostPageProps) {

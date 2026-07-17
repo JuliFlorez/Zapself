@@ -17,6 +17,23 @@ export const metadata: Metadata = {
   description: 'An ephemeral social network experiment where user identities die after 24 hours, but ideas can be immortalized anonymously.',
   keywords: ['zapself', 'ephemeral', 'social network', 'experiment', 'anonymous', 'privacy'],
   authors: [{ name: 'zapself experiment' }],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://zapself.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'zapself | Ephemeral Social Network Experiment',
+    description: 'An ephemeral social network experiment where user identities die after 24 hours, but ideas can be immortalized anonymously.',
+    url: '/',
+    siteName: 'zapself',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'zapself | Ephemeral Social Network Experiment',
+    description: 'An ephemeral social network experiment where user identities die after 24 hours, but ideas can be immortalized anonymously.',
+  },
 };
 
 export const viewport: Viewport = {
