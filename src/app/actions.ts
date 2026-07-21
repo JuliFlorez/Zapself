@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { registerUser, createPost, getCurrentUser } from '@/lib/db';
+import { registerUser, createPost, getCurrentUser, getUserById, addReactionToPost, togglePostReaction } from '@/lib/db';
 
 export interface RegisterResult {
   error?: string;
@@ -42,6 +42,7 @@ export async function registerAction(prevState: RegisterResult | null, formData:
     path: '/',
   });
 
+  revalidatePath('/', 'layout');
   redirect('/');
 }
 
@@ -75,5 +76,54 @@ export async function logoutAction() {
   cookieStore.delete('zapself_userId');
   cookieStore.delete('zapself_username');
   cookieStore.delete('zapself_keepContent');
+  revalidatePath('/', 'layout');
   redirect('/register');
+}
+
+export async function loginByIdAction(prevState: RegisterResult | null, formData: FormData): Promise<RegisterResult> {
+  const userId = (formData.get('userId') as string)?.trim();
+  if (!userId) {
+    return { error: 'Identity Secret ID is required.' };
+  }
+
+  const user = await getUserById(userId);
+  if (!user) {
+    return { error: 'No active session found with this ID or identity has expired (24h).' };
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set('zapself_userId', user.id, {
+    maxAge: 24 * 60 * 60,
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+  });
+  
+  cookieStore.set('zapself_username', user.username, {
+    maxAge: 24 * 60 * 60,
+    path: '/',
+  });
+
+  revalidatePath('/', 'layout');
+  redirect('/');
+}
+
+export async function reactToPostAction(postId: string, emoji: string) {
+  if (!postId || !emoji) return { error: 'Invalid parameters.' };
+  const updatedReactions = await addReactionToPost(postId, emoji);
+  if (!updatedReactions) return { error: 'Failed to react.' };
+  revalidatePath('/');
+  return { success: true, reactions: updatedReactions };
+}
+
+export async function togglePostReactionAction(
+  postId: string,
+  newEmoji: string | null,
+  previousEmoji: string | null
+) {
+  if (!postId) return { error: 'Invalid parameters.' };
+  const updatedReactions = await togglePostReaction(postId, newEmoji, previousEmoji);
+  if (!updatedReactions) return { error: 'Failed to update reaction.' };
+  revalidatePath('/');
+  return { success: true, reactions: updatedReactions };
 }

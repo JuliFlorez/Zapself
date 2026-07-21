@@ -18,6 +18,27 @@ export const metadata: Metadata = {
   keywords: ['zapself', 'ephemeral', 'social network', 'experiment', 'anonymous', 'privacy'],
   authors: [{ name: 'zapself experiment' }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://zapself.com'),
+  manifest: '/icon/site.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon/favicon.ico' },
+    ],
+    apple: [
+      { url: '/icon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      {
+        rel: 'android-chrome-192x192',
+        url: '/icon/android-chrome-192x192.png',
+      },
+      {
+        rel: 'android-chrome-512x512',
+        url: '/icon/android-chrome-512x512.png',
+      },
+    ],
+  },
   alternates: {
     canonical: '/',
   },
@@ -28,11 +49,20 @@ export const metadata: Metadata = {
     siteName: 'zapself',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/icon/android-chrome-512x512.png',
+        width: 512,
+        height: 512,
+        alt: 'zapself logo',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'zapself | Ephemeral Social Network Experiment',
     description: 'An ephemeral social network experiment where user identities die after 24 hours, but ideas can be immortalized anonymously.',
+    images: ['/icon/android-chrome-512x512.png'],
   },
 };
 

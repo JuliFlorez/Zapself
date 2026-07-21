@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import CountdownBadge from './CountdownBadge';
+import EmojiReactions from './EmojiReactions';
 import { MessageSquare, Calendar, User, UserX, Image as ImageIcon, Eye, EyeOff } from 'lucide-react';
 
 interface PostCardProps {
@@ -13,6 +14,7 @@ interface PostCardProps {
     createdAt: number;
     keepContent: boolean;
     imageUrl?: string;
+    reactions?: Record<string, number>;
   };
   isGhost?: boolean;
 }
@@ -98,6 +100,9 @@ export default function PostCard({ post, isGhost = false }: PostCardProps) {
               )}
             </div>
           )}
+
+          {/* Emoji Reactions Section */}
+          <EmojiReactions postId={post.id} initialReactions={post.reactions} />
         </div>
 
         {/* Card Footer */}

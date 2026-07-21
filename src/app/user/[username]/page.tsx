@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { getCleanData, getServerTime } from '@/lib/db';
+import { getCleanData, getCurrentUser, getServerTime } from '@/lib/db';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
+import CensoredUserId from '@/components/CensoredUserId';
 import Link from 'next/link';
 import { User, UserX, Ghost, Calendar, ArrowLeft } from 'lucide-react';
 
@@ -61,11 +62,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   // Run the purge and get clean data
   const data = await getCleanData();
+  const currentUser = await getCurrentUser();
 
   // Find the user if currently active
   const activeUser = data.users.find(
     (u) => u.username.toLowerCase() === decodedUsername
   );
+
+  // Check if current visitor is the owner of this identity
+  const isOwner = Boolean(currentUser && activeUser && currentUser.id === activeUser.id);
 
   // Find all posts written by this user
   const userPosts = data.posts
@@ -113,6 +118,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   Active Experiment Participant
                 </div>
               </div>
+
+              {/* Secret ID: Visible ONLY to the authenticated owner */}
+              {isOwner && <CensoredUserId userId={activeUser.id} />}
 
               <div className="text-xs text-text-muted border-t border-white/5 pt-4 flex flex-wrap justify-between gap-4">
                 <div>

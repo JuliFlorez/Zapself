@@ -15,6 +15,7 @@ export interface Post {
   createdAt: number; // timestamp ms
   keepContent: boolean;
   imageUrl?: string;
+  reactions?: Record<string, number>;
 }
 
 export interface DatabaseSchema {
@@ -187,6 +188,84 @@ export async function getCurrentUser(): Promise<User | null> {
   const userId = cookieStore.get('zapself_userId')?.value;
   if (!userId) return null;
   return data.users.find((u) => u.id === userId) || null;
+}
+
+export async function getUserById(userId: string): Promise<User | null> {
+  const data = await getCleanData();
+  return data.users.find((u) => u.id === userId.trim()) || null;
+}
+
+/**
+ * Helper to add an emoji reaction to a post.
+ */
+export async function addReactionToPost(postId: string, emoji: string): Promise<Record<string, number> | null> {
+  const cleanEmoji = emoji.trim();
+  if (!cleanEmoji || !postId) return null;
+
+  return runLocked(async () => {
+    try {
+      const dataStr = await fs.readFile(DB_PATH, 'utf-8');
+      const currentData: DatabaseSchema = JSON.parse(dataStr);
+      const post = currentData.posts.find((p) => p.id === postId);
+      if (!post) return null;
+
+      if (!post.reactions) {
+        post.reactions = {};
+      }
+
+      post.reactions[cleanEmoji] = (post.reactions[cleanEmoji] || 0) + 1;
+
+      await fs.writeFile(DB_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
+      return post.reactions;
+    } catch (err) {
+      console.error('Failed to add reaction to post:', err);
+      return null;
+    }
+  });
+}
+
+/**
+ * Helper to toggle/switch an emoji reaction on a post (enforces single reaction per user).
+ */
+export async function togglePostReaction(
+  postId: string,
+  newEmoji: string | null,
+  previousEmoji: string | null
+): Promise<Record<string, number> | null> {
+  if (!postId) return null;
+
+  return runLocked(async () => {
+    try {
+      const dataStr = await fs.readFile(DB_PATH, 'utf-8');
+      const currentData: DatabaseSchema = JSON.parse(dataStr);
+      const post = currentData.posts.find((p) => p.id === postId);
+      if (!post) return null;
+
+      if (!post.reactions) {
+        post.reactions = {};
+      }
+
+      // Decrement previous emoji count if user had one
+      if (previousEmoji && post.reactions[previousEmoji]) {
+        post.reactions[previousEmoji] = Math.max(0, post.reactions[previousEmoji] - 1);
+        if (post.reactions[previousEmoji] === 0) {
+          delete post.reactions[previousEmoji];
+        }
+      }
+
+      // Increment new emoji count if user selected one
+      if (newEmoji) {
+        const cleanNew = newEmoji.trim();
+        post.reactions[cleanNew] = (post.reactions[cleanNew] || 0) + 1;
+      }
+
+      await fs.writeFile(DB_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
+      return post.reactions;
+    } catch (err) {
+      console.error('Failed to toggle reaction on post:', err);
+      return null;
+    }
+  });
 }
 
 export function getServerTime(): number {
