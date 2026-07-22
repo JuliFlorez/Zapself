@@ -4,6 +4,7 @@ import CreatePostForm from '@/components/CreatePostForm';
 import PostCard from '@/components/PostCard';
 import LatestNews from '@/components/LatestNews';
 import ActivityCard from '@/components/ActivityCard';
+import ViewTracker from '@/components/ViewTracker';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, MessageSquareWarning } from 'lucide-react';
 import { cookies } from 'next/headers';
@@ -25,6 +26,7 @@ export default async function FeedPage() {
 
   return (
     <div className="min-h-screen bg-bg-dark flex flex-col">
+      <ViewTracker feedPostIds={sortedPosts.map((p) => p.id)} />
       {/* Dynamic Navigation Header */}
       <Header />
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getCleanData } from '@/lib/db';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
+import ViewTracker from '@/components/ViewTracker';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, EyeOff, ShieldCheck, Ghost } from 'lucide-react';
 
@@ -104,6 +105,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div className="min-h-screen bg-bg-dark flex flex-col">
+      <ViewTracker postId={post.id} />
       <Header />
 
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 space-y-6">

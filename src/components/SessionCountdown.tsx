@@ -37,31 +37,34 @@ export default function SessionCountdown({ username, createdAt }: SessionCountdo
   }, [createdAt]);
 
   return (
-    <div className="flex flex-wrap items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-xs shadow-inner">
+    <div className="flex items-center gap-2 sm:gap-4 bg-white/5 border border-white/10 rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs shadow-inner max-w-full">
       <Link
         href={`/user/${username}`}
-        className="flex items-center gap-2 hover:opacity-85 transition-opacity group cursor-pointer"
+        className="flex items-center gap-1.5 sm:gap-2 hover:opacity-85 transition-opacity group cursor-pointer shrink-0 min-w-0"
         title="View your posts"
       >
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-        <span className="font-bold text-white group-hover:text-accent group-hover:underline transition-colors">
+        <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
+        <span className="font-bold text-white group-hover:text-accent group-hover:underline transition-colors truncate max-w-[80px] sm:max-w-[140px]">
           @{username}
         </span>
       </Link>
       
-      <div className="flex items-center gap-1.5 text-text-muted border-l border-white/10 pl-4">
-        <Clock className="w-3.5 h-3.5 text-ghost" />
-        <span>Identity dies in: <strong className="text-white font-mono">{timeLeft || 'calculating...'}</strong></span>
+      <div className="flex items-center gap-1 sm:gap-1.5 text-text-muted border-l border-white/10 pl-2 sm:pl-4 shrink-0">
+        <Clock className="w-3.5 h-3.5 text-ghost shrink-0" />
+        <span className="whitespace-nowrap">
+          <span className="hidden md:inline">Identity dies in: </span>
+          <strong className="text-white font-mono">{timeLeft || '...'}</strong>
+        </span>
       </div>
 
-      <form action={logoutAction} className="border-l border-white/10 pl-4">
+      <form action={logoutAction} className="border-l border-white/10 pl-2 sm:pl-4 shrink-0 flex items-center">
         <button
           type="submit"
-          className="flex items-center gap-1.5 text-red-400 hover:text-red-300 font-bold transition-colors cursor-pointer focus:outline-none"
+          className="flex items-center gap-1 sm:gap-1.5 text-red-400 hover:text-red-300 font-bold transition-colors cursor-pointer focus:outline-none"
           title="Exit current session"
         >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Exit</span>
+          <LogOut className="w-3.5 h-3.5 shrink-0" />
+          <span className="hidden sm:inline">Exit</span>
         </button>
       </form>
     </div>

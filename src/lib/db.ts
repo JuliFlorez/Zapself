@@ -16,6 +16,9 @@ export interface Post {
   keepContent: boolean;
   imageUrl?: string;
   reactions?: Record<string, number>;
+  views?: number;      // Detail page views (/post/[id])
+  feedViews?: number;  // Feed impressions / timeline views
+  downloads?: number;  // Image download count
 }
 
 export interface DatabaseSchema {
@@ -270,4 +273,78 @@ export async function togglePostReaction(
 
 export function getServerTime(): number {
   return Date.now();
+}
+
+/**
+ * Increments detail page views count for a post (/post/[id]).
+ */
+export async function incrementPostViews(postId: string): Promise<number> {
+  if (!postId) return 0;
+  return runLocked(async () => {
+    try {
+      const dataStr = await fs.readFile(DB_PATH, 'utf-8');
+      const currentData: DatabaseSchema = JSON.parse(dataStr);
+      const post = currentData.posts.find((p) => p.id === postId);
+      if (!post) return 0;
+
+      post.views = (post.views || 0) + 1;
+
+      await fs.writeFile(DB_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
+      return post.views;
+    } catch (err) {
+      console.error('Failed to increment post views:', err);
+      return 0;
+    }
+  });
+}
+
+/**
+ * Increments feed view counts for posts displayed in the main feed.
+ */
+export async function incrementFeedViews(postIds: string[]): Promise<void> {
+  if (!postIds || postIds.length === 0) return;
+  return runLocked(async () => {
+    try {
+      const dataStr = await fs.readFile(DB_PATH, 'utf-8');
+      const currentData: DatabaseSchema = JSON.parse(dataStr);
+      const idSet = new Set(postIds);
+      let updated = false;
+
+      for (const post of currentData.posts) {
+        if (idSet.has(post.id)) {
+          post.feedViews = (post.feedViews || 0) + 1;
+          updated = true;
+        }
+      }
+
+      if (updated) {
+        await fs.writeFile(DB_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
+      }
+    } catch (err) {
+      console.error('Failed to increment feed views:', err);
+    }
+  });
+}
+
+/**
+ * Increments the image download count for a post.
+ */
+export async function incrementPostDownloads(postId: string): Promise<number> {
+  if (!postId) return 0;
+  return runLocked(async () => {
+    try {
+      const dataStr = await fs.readFile(DB_PATH, 'utf-8');
+      const currentData: DatabaseSchema = JSON.parse(dataStr);
+      const post = currentData.posts.find((p) => p.id === postId);
+      if (!post) return 0;
+
+      post.downloads = (post.downloads || 0) + 1;
+
+      await fs.writeFile(DB_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
+      return post.downloads;
+    } catch (err) {
+      console.error('Failed to increment post downloads:', err);
+      return 0;
+    }
+  });
 }

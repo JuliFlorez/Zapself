@@ -1,40 +1,49 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { Newspaper, Sparkles } from 'lucide-react';
 
 export interface NewsItem {
   id: string;
   title: string;
   description: string;
-  date: string;
+  createdAt: number;
   tag: string;
   tagColor: string;
   isNew?: boolean;
 }
 
-const DEFAULT_NEWS: NewsItem[] = [
+const DEFAULT_NEWS_CONFIG = [
   {
-    id: '1',
-    title: 'Emoji Reactions & 💩',
-    description: 'React to posts with live accumulating emojis (including 💩!). Each user gets 1 single active reaction per post.',
-    date: 'Just now',
+    id: '0',
+    title: 'Image Downloads & View Analytics 📥',
+    description: 'Download attached images instantly with live download counters, plus smart anti-spam view analytics for feeds and threads.',
+    offsetMinutes: 2,
     tag: 'Feature',
     tagColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     isNew: true,
   },
   {
+    id: '1',
+    title: 'Emoji Reactions & 💩',
+    description: 'React to posts with live accumulating emojis (including 💩!). Each user gets 1 single active reaction per post.',
+    offsetMinutes: 25,
+    tag: 'Feature',
+    tagColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  },
+  {
     id: '2',
     title: 'Secret ID & Session Restore',
     description: 'Copy your secret ID securely from your profile to restore your active 24h session anytime if logged out.',
-    date: 'Just now',
+    offsetMinutes: 140,
     tag: 'Security',
     tagColor: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
-    isNew: true,
   },
   {
     id: '3',
     title: 'Desktop Trilateral Layout',
     description: 'Sidebars with Latest News on the left and the 50 most recent live activities on the right for desktop screens.',
-    date: 'Today',
+    offsetMinutes: 380,
     tag: 'News',
     tagColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
   },
@@ -42,13 +51,87 @@ const DEFAULT_NEWS: NewsItem[] = [
     id: '4',
     title: '24-Hour Ephemeral Cycle',
     description: 'Identities and non-immortalized posts automatically expire and purge after 24 hours.',
-    date: 'Today',
+    offsetMinutes: 1440,
     tag: 'System',
     tagColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   },
 ];
 
+function formatNewsTimeAgo(createdAt: number, now: number): string {
+  const diffMs = Math.max(0, now - createdAt);
+  const seconds = Math.floor(diffMs / 1000);
+
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export default function LatestNews() {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [now, setNow] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const currentNow = Date.now();
+    const STORAGE_KEY = 'zapself_news_timestamps_v2';
+    
+    let timestamps: Record<string, number> = {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        timestamps = JSON.parse(saved);
+      }
+    } catch {
+      // fallback
+    }
+
+    let updated = false;
+    const computedNews: NewsItem[] = DEFAULT_NEWS_CONFIG.map((item) => {
+      let createdAt = timestamps[item.id];
+      if (!createdAt) {
+        createdAt = currentNow - item.offsetMinutes * 60 * 1000;
+        timestamps[item.id] = createdAt;
+        updated = true;
+      }
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        createdAt,
+        tag: item.tag,
+        tagColor: item.tagColor,
+        isNew: item.isNew,
+      };
+    });
+
+    if (updated) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(timestamps));
+      } catch {
+        // ignore
+      }
+    }
+
+    setNews(computedNews);
+
+    // Update 'now' every 10 seconds to update relative times dynamically
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const displayNews = news.length > 0
+    ? news
+    : DEFAULT_NEWS_CONFIG.map(item => ({
+        ...item,
+        createdAt: now - item.offsetMinutes * 60 * 1000
+      }));
+
   return (
     <div className="glass-panel rounded-2xl p-5 border border-white/5 shadow-xl space-y-4">
       {/* Header */}
@@ -72,7 +155,7 @@ export default function LatestNews() {
 
       {/* News List */}
       <div className="space-y-3.5 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
-        {DEFAULT_NEWS.map((item) => (
+        {displayNews.map((item) => (
           <div
             key={item.id}
             className="group relative p-4 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-accent/30 rounded-xl transition-all duration-200 space-y-2.5 cursor-default"
@@ -81,7 +164,9 @@ export default function LatestNews() {
               <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${item.tagColor}`}>
                 {item.tag}
               </span>
-              <span className="text-xs text-text-muted font-medium">{item.date}</span>
+              <span className="text-xs text-text-muted font-medium">
+                {formatNewsTimeAgo(item.createdAt, now)}
+              </span>
             </div>
 
             <div className="space-y-1">

@@ -2,16 +2,20 @@
 
 import { useState, useTransition } from 'react';
 import { createPostAction } from '@/app/actions';
-import { Send, EyeOff, ShieldCheck, Image as ImageIcon, X } from 'lucide-react';
+import { Send, EyeOff, ShieldCheck, Image as ImageIcon, X, AlertTriangle } from 'lucide-react';
 
 interface CreatePostFormProps {
   keepContent: boolean;
   username: string;
 }
 
+const MAX_IMAGE_SIZE_MB = 2.5;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
 export default function CreatePostForm({ keepContent, username }: CreatePostFormProps) {
   const [content, setContent] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [imageSizeText, setImageSizeText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -19,16 +23,24 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
     const file = e.target.files?.[0];
     setError(null);
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setError('Image must be smaller than 2MB.');
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        // Clear file input immediately to stop heavy image upload
+        e.target.value = '';
+        setImage(null);
+        setImageSizeText(null);
+        setError(`⚠️ Imagen demasiado pesada (${fileSizeMB} MB). El tamaño máximo permitido es de ${MAX_IMAGE_SIZE_MB} MB.`);
         return;
       }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
+        setImageSizeText(`${fileSizeMB} MB`);
       };
       reader.onerror = () => {
-        setError('Failed to read image file.');
+        setError('No se pudo leer el archivo de imagen seleccionado.');
+        e.target.value = '';
       };
       reader.readAsDataURL(file);
     }
@@ -36,6 +48,7 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
 
   const handleRemoveImage = () => {
     setImage(null);
+    setImageSizeText(null);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -56,6 +69,7 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
       } else {
         setContent('');
         setImage(null);
+        setImageSizeText(null);
       }
     });
   };
@@ -110,13 +124,13 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <label
               htmlFor="image-upload-input"
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white rounded-xl text-xs font-bold transition-all cursor-pointer select-none"
             >
               <ImageIcon className="w-3.5 h-3.5 text-accent" />
-              <span>Attach Image (Optional)</span>
+              <span>Attach Image (Max 2MB)</span>
             </label>
             <input
               id="image-upload-input"
@@ -127,15 +141,18 @@ export default function CreatePostForm({ keepContent, username }: CreatePostForm
               disabled={isPending}
             />
             {image && (
-              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/20 px-2 py-0.5 border border-emerald-500/20 rounded-md animate-pulse">
-                Image Attached
+              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/30 px-2 py-1 border border-emerald-500/20 rounded-md">
+                ✓ Image Attached ({imageSizeText})
               </span>
             )}
           </div>
         </div>
 
         {error && (
-          <p className="text-xs text-red-400 font-medium" id="post-form-error">{error}</p>
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold animate-pulse" id="post-form-error">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
+            <span>{error}</span>
+          </div>
         )}
 
         <div className="flex items-center justify-between">
